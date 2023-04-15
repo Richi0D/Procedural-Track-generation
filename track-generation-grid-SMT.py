@@ -113,6 +113,7 @@ class Generator_grid:
         return neighbours
 
     def generate_problem(self):
+        self.problem = []
         self._literal_generator() # create all literals
         self._border_states()  # set border to 0
 
@@ -162,7 +163,7 @@ class Generator_grid:
             self.solution['STREET'][pos] = sol
         return self.solution['STREET']
 
-    def get_random_sol(self, problem, method: str = 'reset', getall: bool = False, maxsol=20):
+    def get_random_sol(self, problem, method: str = 'reset', getall: bool = False, maxsol=20, seed=np.random.randint(100)):
         """
         since SAT solver are too deterministic for small problems we need to generate all and sample one.
         :param method: 'reset' or 'add'. How to get random solution, reset solver with random seed or random sample from many solutions
@@ -172,7 +173,7 @@ class Generator_grid:
         :return: return random solution
         """
         # reset solver
-        self.solver = Solver(name="z3", random_seed=np.random.randint(100))  # init solver
+        self.solver = Solver(name="msat", random_seed=seed)  # init solver
         self.solver.add_assertion(problem)
         all_solutions = []
         if method == 'reset':
@@ -187,11 +188,8 @@ class Generator_grid:
                 to_add = []
                 for var in solution:
                     # need to get the opposite states for the Or clause
-                    if self.solver.get_py_value(var[0]):
-                        to_add.append(Not(var[0]))
-                    else:
-                        to_add.append(var[0])
-                self.solver.add_assertion(Or(to_add))
+                    to_add.append(Equals(var[0], var[1]))
+                self.solver.add_assertion(Not(And(to_add)))
         # return solution based on given parameters
         if len(all_solutions) < 1:
             raise RuntimeError('Problem is UNSAT!')
@@ -204,11 +202,12 @@ class Generator_grid:
 
 if __name__ == "__main__":
     gen = Generator_grid(grid_size=(2,2), length=4)
+    gen.generate_problem()
 
-    t = timeit(lambda: gen.generate_problem(), number=1)
-    print(f'time to generate problem: {t}')
-    t = timeit(lambda: gen.get_solution(), number=1)
-    print(f'time to get solution: {t}')
+    gen.get_random_sol(And(gen.problem), method='add')
+
+    gen.generate_problem()
+    print(len(gen.problem))
 
     #gen.generate_problem()
     #atoms = get_atoms(And(gen.problem))

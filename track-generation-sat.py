@@ -136,6 +136,7 @@ class Generator:
         return And(to_add)
 
     def generate_problem(self):
+        self.problem = []
         # generate all variables we need
         self._literal_generator(self.pieces, self.length)
         # add init_state
@@ -187,8 +188,12 @@ class Generator:
 if __name__ == "__main__":
     gen = Generator(length=5)
     gen.generate_problem()
-    #for i in range(26):
-    print(gen.get_true_literals(method='add'))
+    print(len(gen.problem))
     gen.generate_problem()
-    print(gen.get_true_literals(method='add'))
+    print(len(gen.problem))
+
+    #for i in range(26):
+    print(gen.get_true_literals(method='reset'))
+    print(gen.get_true_literals(method='reset'))
+
     #print(gen.solver.statistics())

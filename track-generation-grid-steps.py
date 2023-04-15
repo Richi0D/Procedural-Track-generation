@@ -119,6 +119,7 @@ class Generator_grid:
         return neighbours
 
     def generate_problem(self):
+        self.problem = []
         self._literal_generator() # create all literals
         self._border_states()  # set border to 0
 
@@ -183,7 +184,7 @@ class Generator_grid:
                 self.solution['STREET'][pos] = step
         return self.solution['STREET'], self.grids['STREET']
 
-    def get_random_sol(self, problem, method: str = 'reset', getall: bool = False, maxsol=20):
+    def get_random_sol(self, problem, method: str = 'reset', getall: bool = False, maxsol=20, seed=np.random.randint(100)):
         """
         since SAT solver are too deterministic for small problems we need to generate all and sample one.
         :param method: 'reset' or 'add'. How to get random solution, reset solver with random seed or random sample from many solutions
@@ -193,7 +194,7 @@ class Generator_grid:
         :return: return random solution
         """
         # reset solver
-        self.solver = Solver(name="z3", random_seed=np.random.randint(1000))  # init solver
+        self.solver = Solver(name="msat", random_seed=seed)  # init solver
         self.solver.add_assertion(problem)
         all_solutions = []
         if method == 'reset':
@@ -230,6 +231,11 @@ if __name__ == "__main__":
     print(f'time to generate problem: {t}')
     t = timeit(lambda: gen.get_solution(), number=1)
     print(f'time to get solution: {t}')
+
+    gen.generate_problem()
+    print(len(gen.problem))
+    gen.generate_problem()
+    print(len(gen.problem))
 
     #gen.generate_problem()
     #atoms = get_atoms(And(gen.problem))

@@ -133,6 +133,7 @@ class Generator_grid:
         return neighbours
 
     def generate_problem(self, roundtrack: bool = False):
+        self.problem = []
         self._border_states()  # set border to 0
         if not roundtrack:
             if self.start is None:
@@ -200,7 +201,7 @@ class Generator_grid:
         """
         :return: grids with filled solution
         """
-        self.allsolutions = self.get_random_sol(And(self.problem), method='reset', getall=False)
+        self.allsolutions = self.get_random_sol(And(self.problem), method='add', getall=False)
         self.runs += 1
 
         true_values = list(itertools.filterfalse(lambda x: x[1].constant_value() is False, self.allsolutions))
@@ -213,7 +214,7 @@ class Generator_grid:
         #print(true_values)
         return self.solution['STREET'], self.grids['STREET']
 
-    def get_random_sol(self, problem, method: str = 'reset', getall: bool = False, maxsol=20):
+    def get_random_sol(self, problem, method: str = 'reset', getall: bool = False, maxsol=20, seed=np.random.randint(100)):
         """
         since SAT solver are too deterministic for small problems we need to generate all and sample one.
         :param method: 'reset' or 'add'. How to get random solution, reset solver with random seed or random sample from many solutions
@@ -223,7 +224,7 @@ class Generator_grid:
         :return: return random solution
         """
         # reset solver
-        self.solver = Solver(name="z3", random_seed=np.random.randint(100))  # init solver
+        self.solver = Solver(name="z3", random_seed=seed)  # init solver
         self.solver.add_assertion(problem)
         all_solutions = []
         if method == 'reset':
@@ -256,6 +257,12 @@ class Generator_grid:
 if __name__ == "__main__":
     gen = Generator_grid(grid_size=(2, 2))
     gen.generate_problem()
+    print(len(gen.problem))
+    gen.generate_problem()
+    print(len(gen.problem))
+
+    sol, grid = gen.get_solution()
+    pprint.pp(grid)
     sol, grid = gen.get_solution()
     pprint.pp(grid)
     # print(gen.solver.z3.statistics())

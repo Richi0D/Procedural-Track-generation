@@ -249,7 +249,7 @@ if __name__ == "__main__":
                         generator = gen.Generator_grid(grid_size=gridsize)
 
         # To render the screen, first fill the background with pink
-        screen.fill(pygame.Color('grey'))
+        screen.fill(pygame.Color('white'))
 
         # show buttons and text
         for b in buttons:
